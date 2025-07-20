@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@babel/runtime": "^7.27.6",
+    "tailwind": "^2.3.1"
+  }
+}

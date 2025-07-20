@@ -1,0 +1,220 @@
+Perfect — starting with the PRD and ERD is the right move. Here's a clear version of both tailored to your app concept.
+
+🧾 Product Requirements Document (PRD)
+1. Product Overview
+This is a structured time tracking and goal management application that helps users intentionally allocate time to projects, track real progress, and balance that with real-life chores. It’s designed to improve focus, accountability, and alignment between daily actions and long-term goals.
+
+2. Problem Statement
+Most productivity tools treat tasks, goals, and time as disconnected. People often plan tasks without context (why), track time without structure (for what), or set goals without execution pathways. Additionally, routine life chores are usually ignored, leading to overcommitment.
+
+3. Target Users
+* Goal-driven professionals (e.g., developers, designers, freelancers)
+* Students managing multiple areas (school, career, self-development)
+* People working on long-term habits or life restructuring
+
+4. Use Cases
+* A user wants to spend 3 hours/day on "Career Development" and track that across job applications, networking, and building side projects.
+* A user needs to log time spent on daily chores like cooking, without those affecting their core project time.
+* A user wants to review how well they stayed aligned with their goals each week.
+
+5. Core Features (MVP)
+Entities:
+* Projects: Broad areas of work with time allocation goals
+* Goals: Milestones within a project, optionally with deadlines
+* Tasks: Concrete, time-trackable actions under a goal
+* Chores: Recurring routine tasks not tied to projects
+Time System:
+* Daily/Weekly time allocation per Project and Goal
+* Actual time logs per Task/Chore
+* Daily, Weekly, and Monthly views
+* Visual feedback (e.g., color blocks, progress %)
+
+6. MVP Scope
+✅ In Scope:
+* CRUD for Projects, Goals, Tasks, Chores
+* Task status tracking (planned/done)
+* Time allocation per entity
+* Recurring chores with frequency
+* Calendar & list-based daily/weekly view
+* Goal progress display
+❌ Out of Scope (for now):
+* Collaboration/shared projects
+* AI suggestions or auto-planning
+* Pomodoro timers
+* Notifications or reminders
+
+7. Success Metrics
+* Users log at least 3 tasks per day
+* 60%+ of allocated time is actually logged
+* Chore completion rate ≥ 80%
+* Positive qualitative feedback from early testers
+
+
+🗂 Entity Relationship Diagram (ERD)
+Here’s a high-level schema — we can refine with constraints and indexes once the base is approved.
+ERD Overview
+User
+ ├── has many Projects
+ ├── has many Chores
+
+Project
+ ├── has many Goals
+
+Goal
+ ├── belongs to Project
+ ├── has many Tasks
+
+Task
+ ├── belongs to Goal
+
+Chore
+ ├── has many ChoreLogs
+
+ChoreLog
+ ├── belongs to Chore
+
+Tables & Fields
+users
+* id (PK)
+* name
+* email
+* created_at
+projects
+* id (PK)
+* user_id (FK → users.id)
+* name
+* color
+* daily_time_allocated_minutes
+* weekly_time_allocated_minutes
+* created_at
+goals
+* id (PK)
+* project_id (FK → projects.id)
+* name
+* description
+* deadline (optional)
+* daily_time_allocated_minutes (optional)
+* weekly_time_allocated_minutes (optional)
+* created_at
+tasks
+* id (PK)
+* goal_id (FK → goals.id)
+* name
+* description
+* status (enum: planned, done)
+* estimated_time_minutes (optional)
+* actual_time_minutes
+* date
+* created_at
+chores
+* id (PK)
+* user_id (FK → users.id)
+* name
+* frequency (enum: daily, weekly, monthly)
+* estimated_time_minutes
+* is_active
+* created_at
+chore_logs
+* id (PK)
+* chore_id (FK → chores.id)
+* date
+* actual_time_minutes
+* created_at
+
+Great! Here's a clear and actionable MVP Feature Checklist, structured so you can drop it directly into a task board like Trello, Linear, Notion, or Jira.
+
+✅ MVP Feature Checklist
+Organized by Frontend, Backend/API, Design, and Core Logic.
+
+🌐 Frontend
+🔧 UI Components
+* Project List View (CRUD)
+* Goal List View (under a Project)
+* Task List View (under a Goal)
+* Chore List View (recurring tasks)
+* Daily View (color-coded timeline of tasks + chores)
+* Weekly Calendar View (time blocks by project)
+* Task Logger (log actual time spent)
+* Chore Logger (daily/weekly/monthly)
+* Simple Dashboard (goal progress, time spent vs planned)
+🧭 Navigation & Layout
+* Basic layout + navbar/sidebar
+* Project → Goal → Task drill-down navigation
+* Date picker for switching views
+
+🧠 Core Logic
+⏳ Time Allocation & Validation
+* Allow user to set daily/weekly time for projects
+* Allow user to set optional daily/weekly time for goals
+* Ensure total goal time ≤ project time
+* Allow task logging against goals/tasks
+* Show "planned vs actual" time breakdown
+✅ Task & Chore Completion
+* Mark task as done / in progress / skipped
+* Log actual time against a task
+* Auto-generate chores by frequency (daily/weekly/monthly)
+* Chore instance marking (done/skipped)
+
+🗃️ Backend & API
+📚 Database
+* Implement database schema (ERD structure)
+* Set up migrations/seeding
+🔌 REST API
+* /users (auth stub or mock user)
+* /projects (CRUD)
+* /goals (CRUD + link to project)
+* /tasks (CRUD + log actual time)
+* /chores (CRUD + recurrence setup)
+* /chore-logs (create/read logs per date)
+* /dashboard (summary of time + progress)
+
+🎨 Design
+Wireframes / Components
+* Project → Goal → Task hierarchy wireframe
+* Daily planner view (task + chore list)
+* Weekly calendar with project colors
+* Create/edit modals (project, goal, task, chore)
+* Progress and time visualization (simple bars/rings)
+
+🧪 QA & Testing
+Manual Testing
+* Create a project with multiple goals and tasks
+* Allocate time at project level and validate limits
+* Create a recurring chore and test auto-instance
+* Switch between daily/weekly views and check data
+* Log time to tasks and chores, view updates in dashboard
+
+
+Layer	Tools
+Frontend	React, Tailwind, React Query, FullCalendar, Zustand, TypeScript
+Backend	FastAPI, LangChain, SQLAlchemy, PostgreSQL, Pydantic
+AI	LangChain, OpenAI/Anthropic
+Infra	Vercel (FE), Render/Railway (BE), GitHub Actions, Docker
+Auth	FastAPI JWT
+
+Frontend -
+
+| Task                            | Tool                     |
+| ------------------------------- | ------------------------ |
+| Package Manager                 | bun                      |
+| Formatter + Linter              | Prettier                 |
+| Type Checker                    | TypeScript               |
+| Git Hooks                       | Husky + lint-staged      |
+| Testing                         | Vitest + Testing Library |
+| E2E Testing (optional)          | Playwright               |
+| CI/CD                           | GitHub Actions           |
+| Env Management                  | dotenv                   |
+| Component Playground (optional) | Storybook                |
+
+Backend -
+| Task               | Tool                    |
+| ------------------ | ----------------------- |
+| Package Manager    | uv                      |
+| Formatter + Linter | Ruff                    |
+| Type Checker       | mypy                    |
+| Testing            | Pytest                  |
+| Git Hooks          | pre-commit              |
+| Env Management     | python-dotenv or direnv |
+| CI/CD              | GitHub Actions          |
+| Containerization   | Docker + Docker Compose |
+
