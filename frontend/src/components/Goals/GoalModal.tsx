@@ -1,6 +1,5 @@
 import {
   Input,
-  NumberInput,
   Text,
   Textarea,
   VStack,

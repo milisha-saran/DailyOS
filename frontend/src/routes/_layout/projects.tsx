@@ -77,7 +77,7 @@ function ProjectsPage() {
       <Flex justify="space-between" align="center" mb={6}>
         <Heading size="lg">Projects</Heading>
         <Button onClick={handleCreateProject}>
-          <FiPlus />
+          <FiPlus size={16} />
           New Project
         </Button>
       </Flex>
@@ -97,7 +97,7 @@ function ProjectsPage() {
             Create your first project to start tracking your goals and tasks
           </Text>
           <Button onClick={handleCreateProject}>
-            <FiPlus />
+            <FiPlus size={16} />
             Create Project
           </Button>
         </Box>
@@ -140,7 +140,7 @@ function ProjectsPage() {
                     variant="ghost"
                     onClick={() => handleEditProject(project)}
                   >
-                    <FiEdit />
+                    <FiEdit size={14} />
                     Edit
                   </Button>
                   <Button
@@ -149,7 +149,7 @@ function ProjectsPage() {
                     onClick={() => handleDeleteProject(project.id)}
                     loading={deleteProjectMutation.isPending}
                   >
-                    <FiTrash2 />
+                    <FiTrash2 size={14} />
                     Delete
                   </Button>
                 </Flex>

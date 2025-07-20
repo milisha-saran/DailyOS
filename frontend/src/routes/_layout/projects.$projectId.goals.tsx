@@ -90,7 +90,7 @@ function GoalsPage() {
           onClick={() => window.history.back()}
           mr={4}
         >
-          <FiArrowLeft />
+          <FiArrowLeft size={16} />
           Back to Projects
         </Button>
         <Box flex={1}>
@@ -110,7 +110,7 @@ function GoalsPage() {
           </Flex>
         </Box>
         <Button onClick={handleCreateGoal}>
-          <FiPlus />
+          <FiPlus size={16} />
           New Goal
         </Button>
       </Flex>
@@ -130,7 +130,7 @@ function GoalsPage() {
             Create your first goal to start breaking down this project
           </Text>
           <Button onClick={handleCreateGoal}>
-            <FiPlus />
+            <FiPlus size={16} />
             Create Goal
           </Button>
         </Box>
@@ -180,7 +180,7 @@ function GoalsPage() {
                     variant="ghost"
                     onClick={() => handleEditGoal(goal)}
                   >
-                    <FiEdit />
+                    <FiEdit size={14} />
                     Edit
                   </Button>
                   <Button
@@ -189,7 +189,7 @@ function GoalsPage() {
                     onClick={() => handleDeleteGoal(goal.id)}
                     loading={deleteGoalMutation.isPending}
                   >
-                    <FiTrash2 />
+                    <FiTrash2 size={14} />
                     Delete
                   </Button>
                 </Flex>

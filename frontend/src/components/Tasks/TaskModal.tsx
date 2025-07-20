@@ -1,9 +1,8 @@
 import {
   Input,
-  NumberInput,
-  Select,
   Textarea,
   VStack,
+  Box,
 } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
@@ -108,7 +107,7 @@ export function TaskModal({ isOpen, onClose, task, projects }: TaskModalProps) {
           </DialogHeader>
           
           <DialogBody>
-            <VStack spacing={4}>
+            <VStack gap={4}>
               <Field
                 label="Task Name"
                 required
@@ -135,10 +134,21 @@ export function TaskModal({ isOpen, onClose, task, projects }: TaskModalProps) {
                 invalid={!!errors.goal_id}
                 errorText={errors.goal_id?.message}
               >
-                <Select
+                <Box as="select"
                   {...register("goal_id", { required: "Please select a goal" })}
-                  placeholder="Select a goal"
+                  w="100%"
+                  p={2}
+                  border="1px solid"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  bg="white"
+                  _focus={{
+                    borderColor: "blue.500",
+                    outline: "none",
+                    boxShadow: "0 0 0 1px blue.500"
+                  }}
                 >
+                  <option value="">Select a goal</option>
                   {goals.map((goal) => {
                     const project = projects.find(p => p.id === goal.project_id)
                     return (
@@ -147,26 +157,38 @@ export function TaskModal({ isOpen, onClose, task, projects }: TaskModalProps) {
                       </option>
                     )
                   })}
-                </Select>
+                </Box>
               </Field>
 
               <Field label="Status">
-                <Select {...register("status")}>
+                <Box as="select"
+                  {...register("status")}
+                  w="100%"
+                  p={2}
+                  border="1px solid"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  bg="white"
+                  _focus={{
+                    borderColor: "blue.500",
+                    outline: "none",
+                    boxShadow: "0 0 0 1px blue.500"
+                  }}
+                >
                   <option value="planned">Planned</option>
                   <option value="done">Done</option>
-                </Select>
+                </Box>
               </Field>
 
               <Field label="Estimated Time (minutes)">
-                <NumberInput min={0}>
-                  <Input
-                    {...register("estimated_time_minutes", {
-                      min: { value: 0, message: "Must be at least 0" },
-                    })}
-                    placeholder="Optional"
-                    type="number"
-                  />
-                </NumberInput>
+                <Input
+                  {...register("estimated_time_minutes", {
+                    min: { value: 0, message: "Must be at least 0" },
+                  })}
+                  placeholder="Optional"
+                  type="number"
+                  min={0}
+                />
               </Field>
 
               <Field

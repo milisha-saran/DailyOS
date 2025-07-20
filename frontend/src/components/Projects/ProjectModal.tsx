@@ -2,7 +2,6 @@ import {
   Box,
   HStack,
   Input,
-  NumberInput,
   VStack,
 } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -99,7 +98,7 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
           </DialogHeader>
           
           <DialogBody>
-            <VStack spacing={4}>
+            <VStack gap={4}>
               <Field
                 label="Project Name"
                 required
@@ -113,7 +112,7 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
               </Field>
 
               <Field label="Color">
-                <HStack spacing={2} wrap="wrap">
+                <HStack gap={2} wrap="wrap">
                   {colorOptions.map((color) => (
                     <Box
                       key={color}
@@ -136,16 +135,15 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
                 invalid={!!errors.daily_time_allocated_minutes}
                 errorText={errors.daily_time_allocated_minutes?.message}
               >
-                <NumberInput min={0}>
-                  <Input
-                    {...register("daily_time_allocated_minutes", {
-                      required: "Daily time allocation is required",
-                      min: { value: 0, message: "Must be at least 0" },
-                    })}
-                    placeholder="60"
-                    type="number"
-                  />
-                </NumberInput>
+                <Input
+                  {...register("daily_time_allocated_minutes", {
+                    required: "Daily time allocation is required",
+                    min: { value: 0, message: "Must be at least 0" },
+                  })}
+                  placeholder="60"
+                  type="number"
+                  min={0}
+                />
               </Field>
 
               <Field
@@ -154,16 +152,15 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
                 invalid={!!errors.weekly_time_allocated_minutes}
                 errorText={errors.weekly_time_allocated_minutes?.message}
               >
-                <NumberInput min={0}>
-                  <Input
-                    {...register("weekly_time_allocated_minutes", {
-                      required: "Weekly time allocation is required",
-                      min: { value: 0, message: "Must be at least 0" },
-                    })}
-                    placeholder="420"
-                    type="number"
-                  />
-                </NumberInput>
+                <Input
+                  {...register("weekly_time_allocated_minutes", {
+                    required: "Weekly time allocation is required",
+                    min: { value: 0, message: "Must be at least 0" },
+                  })}
+                  placeholder="420"
+                  type="number"
+                  min={0}
+                />
               </Field>
             </VStack>
           </DialogBody>
