@@ -34,61 +34,104 @@ const Sidebar = () => {
         <DrawerTrigger asChild>
           <IconButton
             variant="ghost"
-            color="inherit"
+            color="gray.700"
             display={{ base: "flex", md: "none" }}
             aria-label="Open Menu"
-            position="absolute"
-            zIndex="100"
-            m={4}
+            position="fixed"
+            zIndex="1001"
+            top={4}
+            left={4}
+            bg="white"
+            shadow="md"
+            borderRadius="lg"
           >
             <FaBars />
           </IconButton>
         </DrawerTrigger>
-        <DrawerContent maxW="xs">
+        <DrawerContent maxW="xs" bg="white">
           <DrawerCloseTrigger />
-          <DrawerBody>
-            <Flex flexDir="column" justify="space-between">
+          <DrawerBody p={0}>
+            <Flex flexDir="column" justify="space-between" h="full">
               <Box>
                 <SidebarItems onClose={() => setOpen(false)} />
-                <Flex
+                <Box
                   as="button"
                   onClick={() => {
                     logout()
                   }}
-                  alignItems="center"
-                  gap={4}
-                  px={4}
-                  py={2}
+                  w="full"
+                  p={4}
+                  borderTop="1px solid"
+                  borderColor="gray.200"
+                  _hover={{ bg: "gray.50" }}
+                  transition="all 0.2s ease"
                 >
-                  <FiLogOut />
-                  <Text>Log Out</Text>
-                </Flex>
+                  <Flex alignItems="center" gap={3}>
+                    <Box color="danger.500">
+                      <FiLogOut size={18} />
+                    </Box>
+                    <Text color="danger.500" fontWeight="500">
+                      Log Out
+                    </Text>
+                  </Flex>
+                </Box>
               </Box>
               {currentUser?.email && (
-                <Text fontSize="sm" p={2} truncate maxW="sm">
-                  Logged in as: {currentUser.email}
-                </Text>
+                <Box
+                  p={4}
+                  borderTop="1px solid"
+                  borderColor="gray.200"
+                  bg="gray.50"
+                >
+                  <Text fontSize="xs" color="gray.500" fontWeight="500" mb={1}>
+                    SIGNED IN AS
+                  </Text>
+                  <Text fontSize="sm" color="gray.700" fontWeight="600" truncate>
+                    {currentUser.email}
+                  </Text>
+                </Box>
               )}
             </Flex>
           </DrawerBody>
-          <DrawerCloseTrigger />
         </DrawerContent>
       </DrawerRoot>
 
       {/* Desktop */}
-
       <Box
-        display={{ base: "none", md: "flex" }}
+        display={{ base: "none", md: "block" }}
+        w="280px"
+        h="calc(100vh - 80px)"
+        bg="white"
+        borderRight="1px solid"
+        borderColor="gray.200"
         position="sticky"
-        bg="bg.subtle"
-        top={0}
-        minW="xs"
-        h="100vh"
-        p={4}
+        top="80px"
+        overflowY="auto"
       >
-        <Box w="100%">
+        <Box p={6}>
           <SidebarItems />
         </Box>
+        
+        {/* User Info at Bottom */}
+        {currentUser?.email && (
+          <Box
+            position="absolute"
+            bottom={0}
+            left={0}
+            right={0}
+            p={6}
+            borderTop="1px solid"
+            borderColor="gray.200"
+            bg="gray.50"
+          >
+            <Text fontSize="xs" color="gray.500" fontWeight="500" mb={1}>
+              SIGNED IN AS
+            </Text>
+            <Text fontSize="sm" color="gray.700" fontWeight="600" truncate>
+              {currentUser.email}
+            </Text>
+          </Box>
+        )}
       </Box>
     </>
   )

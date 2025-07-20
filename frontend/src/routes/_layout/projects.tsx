@@ -1,12 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { Box, Flex, Heading, Text, VStack } from "@chakra-ui/react"
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { Box, Flex, Heading, Text, Grid, GridItem } from "@chakra-ui/react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi"
+import { 
+  FiPlus, 
+  FiEdit, 
+  FiTrash2, 
+  FiTarget, 
+  FiClock, 
+  FiCalendar,
+  FiArrowRight
+} from "react-icons/fi"
 
-import { ProjectsService, type ProjectPublic } from "../../client"
+import { ProjectsService, TasksService, type ProjectPublic } from "../../client"
 import { ProjectModal } from "../../components/Projects/ProjectModal"
 import { Button } from "../../components/ui/button"
+import { Card } from "../../components/ui/card"
+import { ProgressBar } from "../../components/ui/progress"
 
 export const Route = createFileRoute("/_layout/projects")({
   component: ProjectsPage,
@@ -24,6 +34,11 @@ function ProjectsPage() {
   } = useQuery({
     queryKey: ["projects"],
     queryFn: () => ProjectsService.readProjects(),
+  })
+
+  const { data: tasksData } = useQuery({
+    queryKey: ["tasks"],
+    queryFn: () => TasksService.readTasks(),
   })
 
   const deleteProjectMutation = useMutation({
@@ -44,7 +59,7 @@ function ProjectsPage() {
   }
 
   const handleDeleteProject = (projectId: string) => {
-    if (confirm("Are you sure you want to delete this project?")) {
+    if (confirm("Are you sure you want to delete this project? This will also delete all associated goals and tasks.")) {
       deleteProjectMutation.mutate(projectId)
     }
   }
@@ -56,107 +71,211 @@ function ProjectsPage() {
 
   if (isLoading) {
     return (
-      <Box p={6}>
-        <Text>Loading projects...</Text>
+      <Box p={8} bg="gray.50" minH="100vh">
+        <Box
+          bg="white"
+          p={8}
+          borderRadius="xl"
+          shadow="sm"
+          textAlign="center"
+        >
+          <Text color="gray.600">Loading your projects...</Text>
+        </Box>
       </Box>
     )
   }
 
   if (error) {
     return (
-      <Box p={6}>
-        <Text color="red.500">Error loading projects</Text>
+      <Box p={8} bg="gray.50" minH="100vh">
+        <Card>
+          <Text color="danger.600" textAlign="center">
+            Error loading projects. Please try again.
+          </Text>
+        </Card>
       </Box>
     )
   }
 
   const projects = projectsData?.data || []
+  const tasks = tasksData?.data || []
 
   return (
-    <Box p={6}>
-      <Flex justify="space-between" align="center" mb={6}>
-        <Heading size="lg">Projects</Heading>
-        <Button onClick={handleCreateProject}>
-          <FiPlus size={16} />
+    <Box p={8} bg="gray.50" minH="100vh">
+      {/* Header */}
+      <Flex justify="space-between" align="center" mb={8}>
+        <Box>
+          <Heading size="2xl" color="gray.900" fontWeight="700" mb={2}>
+            Projects
+          </Heading>
+          <Text fontSize="lg" color="gray.600">
+            Organize your goals and track your progress
+          </Text>
+        </Box>
+        <Button onClick={handleCreateProject} size="lg">
+          <FiPlus size={20} />
           New Project
         </Button>
       </Flex>
 
       {projects.length === 0 ? (
-        <Box
-          textAlign="center"
-          py={12}
-          border="2px dashed"
-          borderColor="gray.200"
-          borderRadius="lg"
-        >
-          <Text fontSize="lg" color="gray.500" mb={4}>
-            No projects yet
-          </Text>
-          <Text color="gray.400" mb={6}>
-            Create your first project to start tracking your goals and tasks
-          </Text>
-          <Button onClick={handleCreateProject}>
-            <FiPlus size={16} />
-            Create Project
-          </Button>
-        </Box>
-      ) : (
-        <VStack spacing={4} align="stretch">
-          {projects.map((project) => (
-            <Box
-              key={project.id}
-              p={6}
-              border="1px solid"
-              borderColor="gray.200"
-              borderRadius="lg"
-              bg="white"
-              shadow="sm"
-            >
-              <Flex justify="space-between" align="start">
-                <Box flex={1}>
-                  <Flex align="center" mb={2}>
-                    <Box
-                      w={4}
-                      h={4}
-                      bg={project.color}
-                      borderRadius="full"
-                      mr={3}
-                    />
-                    <Heading size="md">{project.name}</Heading>
-                  </Flex>
-                  <Flex gap={6} color="gray.600" fontSize="sm">
-                    <Text>
-                      Daily: {project.daily_time_allocated_minutes} min
-                    </Text>
-                    <Text>
-                      Weekly: {project.weekly_time_allocated_minutes} min
-                    </Text>
-                  </Flex>
-                </Box>
-                <Flex gap={2}>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleEditProject(project)}
-                  >
-                    <FiEdit size={14} />
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDeleteProject(project.id)}
-                    loading={deleteProjectMutation.isPending}
-                  >
-                    <FiTrash2 size={14} />
-                    Delete
-                  </Button>
-                </Flex>
-              </Flex>
+        <Card size="lg">
+          <Box textAlign="center" py={12}>
+            <Box color="gray.300" mb={6}>
+              <FiTarget size={64} style={{ margin: "0 auto" }} />
             </Box>
-          ))}
-        </VStack>
+            <Heading size="lg" color="gray.700" mb={4}>
+              No projects yet
+            </Heading>
+            <Text color="gray.500" mb={8} maxW="md" mx="auto">
+              Projects help you organize your goals and tasks. Create your first project to start tracking your productivity journey.
+            </Text>
+            <Button onClick={handleCreateProject} size="lg">
+              <FiPlus size={20} />
+              Create Your First Project
+            </Button>
+          </Box>
+        </Card>
+      ) : (
+        <Grid
+          templateColumns={{
+            base: "1fr",
+            md: "repeat(2, 1fr)",
+            lg: "repeat(3, 1fr)",
+          }}
+          gap={6}
+        >
+          {projects.map((project) => {
+            const projectTasks = tasks.filter(t => t.goal?.project_id === project.id)
+            const completedTasks = projectTasks.filter(t => t.status === "done")
+            const totalTimeLogged = projectTasks.reduce((sum, t) => sum + (t.actual_time_minutes || 0), 0)
+            const progress = projectTasks.length > 0 
+              ? (completedTasks.length / projectTasks.length) * 100 
+              : 0
+
+            return (
+              <GridItem key={project.id}>
+                <Card variant="elevated" className="card-hover">
+                  {/* Project Header */}
+                  <Flex align="center" justify="space-between" mb={4}>
+                    <Flex align="center">
+                      <Box
+                        w={4}
+                        h={4}
+                        bg={project.color}
+                        borderRadius="full"
+                        mr={3}
+                        shadow="sm"
+                      />
+                      <Heading size="md" color="gray.900" fontWeight="600">
+                        {project.name}
+                      </Heading>
+                    </Flex>
+                    
+                    <Flex gap={1}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleEditProject(project)}
+                      >
+                        <FiEdit size={14} />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDeleteProject(project.id)}
+                        loading={deleteProjectMutation.isPending}
+                      >
+                        <FiTrash2 size={14} />
+                      </Button>
+                    </Flex>
+                  </Flex>
+
+                  {/* Progress */}
+                  <Box mb={6}>
+                    <Flex justify="space-between" align="center" mb={2}>
+                      <Text fontSize="sm" fontWeight="500" color="gray.700">
+                        Progress
+                      </Text>
+                      <Text fontSize="sm" color="gray.500">
+                        {completedTasks.length}/{projectTasks.length} tasks
+                      </Text>
+                    </Flex>
+                    <ProgressBar
+                      value={completedTasks.length}
+                      max={projectTasks.length || 1}
+                      color={project.color}
+                      showValue={false}
+                    />
+                  </Box>
+
+                  {/* Stats */}
+                  <Grid templateColumns="repeat(2, 1fr)" gap={4} mb={6}>
+                    <Box>
+                      <Flex align="center" mb={1}>
+                        <Box color="brand.500" mr={2}>
+                          <FiClock size={14} />
+                        </Box>
+                        <Text fontSize="xs" color="gray.500" fontWeight="500">
+                          DAILY
+                        </Text>
+                      </Flex>
+                      <Text fontSize="sm" fontWeight="600" color="gray.900">
+                        {Math.round(project.daily_time_allocated_minutes / 60)}h {project.daily_time_allocated_minutes % 60}m
+                      </Text>
+                    </Box>
+                    
+                    <Box>
+                      <Flex align="center" mb={1}>
+                        <Box color="accent.500" mr={2}>
+                          <FiCalendar size={14} />
+                        </Box>
+                        <Text fontSize="xs" color="gray.500" fontWeight="500">
+                          WEEKLY
+                        </Text>
+                      </Flex>
+                      <Text fontSize="sm" fontWeight="600" color="gray.900">
+                        {Math.round(project.weekly_time_allocated_minutes / 60)}h
+                      </Text>
+                    </Box>
+                  </Grid>
+
+                  {/* Time Logged */}
+                  <Box
+                    bg="gray.50"
+                    p={3}
+                    borderRadius="lg"
+                    mb={4}
+                  >
+                    <Flex justify="space-between" align="center">
+                      <Text fontSize="sm" color="gray.600">
+                        Time logged this week
+                      </Text>
+                      <Text fontSize="sm" fontWeight="600" color="gray.900">
+                        {Math.round(totalTimeLogged / 60)}h {totalTimeLogged % 60}m
+                      </Text>
+                    </Flex>
+                  </Box>
+
+                  {/* View Goals Button */}
+                  <Link
+                    to="/projects/$projectId/goals"
+                    params={{ projectId: project.id }}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      w="full"
+                    >
+                      View Goals
+                      <FiArrowRight size={14} />
+                    </Button>
+                  </Link>
+                </Card>
+              </GridItem>
+            )
+          })}
+        </Grid>
       )}
 
       <ProjectModal
