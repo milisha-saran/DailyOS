@@ -17,9 +17,13 @@ import { Route as RecoverPasswordImport } from './routes/recover-password'
 import { Route as LoginImport } from './routes/login'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
+import { Route as LayoutTasksImport } from './routes/_layout/tasks'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
+import { Route as LayoutProjectsImport } from './routes/_layout/projects'
 import { Route as LayoutItemsImport } from './routes/_layout/items'
+import { Route as LayoutDashboardImport } from './routes/_layout/dashboard'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
+import { Route as LayoutProjectsProjectIdGoalsImport } from './routes/_layout/projects.$projectId.goals'
 
 // Create/Update Routes
 
@@ -53,8 +57,18 @@ const LayoutIndexRoute = LayoutIndexImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutTasksRoute = LayoutTasksImport.update({
+  path: '/tasks',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
 const LayoutSettingsRoute = LayoutSettingsImport.update({
   path: '/settings',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutProjectsRoute = LayoutProjectsImport.update({
+  path: '/projects',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -63,10 +77,21 @@ const LayoutItemsRoute = LayoutItemsImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutDashboardRoute = LayoutDashboardImport.update({
+  path: '/dashboard',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
 const LayoutAdminRoute = LayoutAdminImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+
+const LayoutProjectsProjectIdGoalsRoute =
+  LayoutProjectsProjectIdGoalsImport.update({
+    path: '/$projectId/goals',
+    getParentRoute: () => LayoutProjectsRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -96,17 +121,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/dashboard': {
+      preLoaderRoute: typeof LayoutDashboardImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/items': {
       preLoaderRoute: typeof LayoutItemsImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/projects': {
+      preLoaderRoute: typeof LayoutProjectsImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/settings': {
       preLoaderRoute: typeof LayoutSettingsImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/tasks': {
+      preLoaderRoute: typeof LayoutTasksImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/': {
       preLoaderRoute: typeof LayoutIndexImport
       parentRoute: typeof LayoutImport
+    }
+    '/_layout/projects/$projectId/goals': {
+      preLoaderRoute: typeof LayoutProjectsProjectIdGoalsImport
+      parentRoute: typeof LayoutProjectsImport
     }
   }
 }
@@ -116,8 +157,11 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   LayoutRoute.addChildren([
     LayoutAdminRoute,
+    LayoutDashboardRoute,
     LayoutItemsRoute,
+    LayoutProjectsRoute.addChildren([LayoutProjectsProjectIdGoalsRoute]),
     LayoutSettingsRoute,
+    LayoutTasksRoute,
     LayoutIndexRoute,
   ]),
   LoginRoute,

@@ -36,7 +36,7 @@ def read_projects(
         .where(Project.user_id == current_user.id)
         .offset(skip)
         .limit(limit)
-        .order_by(Project.created_at.desc())
+        .order_by(Project.created_at)
     )
     projects = session.exec(statement).all()
 

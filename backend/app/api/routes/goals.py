@@ -49,7 +49,7 @@ def read_goals(
         base_query
         .offset(skip)
         .limit(limit)
-        .order_by(Goal.created_at.desc())
+        .order_by(Goal.created_at)
     )
     goals = session.exec(statement).all()
 
