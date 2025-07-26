@@ -7,7 +7,9 @@ import {
   FiUsers, 
   FiTarget, 
   FiFolder, 
-  FiCheckSquare
+  FiCheckSquare,
+  FiRepeat,
+  FiFlag
 } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
 
@@ -15,8 +17,10 @@ import type { UserPublic } from "@/client"
 
 const items = [
   { icon: FiHome, title: "Dashboard", path: "/dashboard", description: "Overview & insights" },
-  { icon: FiFolder, title: "Projects", path: "/projects", description: "Organize your goals" },
+  { icon: FiFolder, title: "Projects", path: "/projects", description: "Organize your work" },
+  { icon: FiFlag, title: "Goals", path: "/goals", description: "Track your objectives" },
   { icon: FiCheckSquare, title: "Tasks", path: "/tasks", description: "Daily actions" },
+  { icon: FiRepeat, title: "Chores", path: "/chores", description: "Recurring tasks" },
   { icon: FiTarget, title: "Items", path: "/items", description: "Manage your items" },
 ]
 

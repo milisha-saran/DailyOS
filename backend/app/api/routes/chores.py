@@ -1,16 +1,26 @@
 import uuid
+from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
+from app.crud import (
+    generate_chore_instances,
+    get_pending_chore_instances,
+    complete_chore_instance,
+    generate_chore_instances_for_date_range
+)
 from app.models import (
     Chore,
     ChoreCreate,
     ChorePublic,
     ChoresPublic,
     ChoreUpdate,
+    ChoreLog,
+    ChoreLogPublic,
+    ChoreLogsPublic,
     Message,
 )
 
@@ -142,3 +152,101 @@ def toggle_chore_active(
     session.commit()
     session.refresh(chore)
     return chore
+
+
+@router.post("/generate-instances", response_model=ChoreLogsPublic)
+def generate_chore_instances_endpoint(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    target_date: datetime | None = None,
+) -> Any:
+    """
+    Generate chore instances for the current user for the target date (defaults to today).
+    """
+    instances = generate_chore_instances(
+        session=session,
+        user_id=current_user.id,
+        target_date=target_date
+    )
+    
+    return ChoreLogsPublic(data=instances, count=len(instances))
+
+
+@router.get("/pending-instances", response_model=ChoreLogsPublic)
+def get_pending_chore_instances_endpoint(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    target_date: datetime | None = None,
+) -> Any:
+    """
+    Get pending (uncompleted) chore instances for the target date (defaults to today).
+    """
+    instances = get_pending_chore_instances(
+        session=session,
+        user_id=current_user.id,
+        target_date=target_date
+    )
+    
+    return ChoreLogsPublic(data=instances, count=len(instances))
+
+
+@router.patch("/instances/{instance_id}/complete", response_model=ChoreLogPublic)
+def complete_chore_instance_endpoint(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    instance_id: uuid.UUID,
+    actual_time_minutes: int,
+) -> Any:
+    """
+    Mark a chore instance as completed with the actual time spent.
+    """
+    if actual_time_minutes <= 0:
+        raise HTTPException(status_code=400, detail="Actual time must be positive")
+    
+    # Verify the chore instance belongs to the current user
+    chore_log = session.get(ChoreLog, instance_id)
+    if not chore_log:
+        raise HTTPException(status_code=404, detail="Chore instance not found")
+    
+    # Check ownership through chore relationship
+    chore = session.get(Chore, chore_log.chore_id)
+    if not chore or chore.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    completed_instance = complete_chore_instance(
+        session=session,
+        chore_log_id=instance_id,
+        actual_time_minutes=actual_time_minutes
+    )
+    
+    if not completed_instance:
+        raise HTTPException(status_code=404, detail="Chore instance not found")
+    
+    return completed_instance
+
+
+@router.post("/generate-instances-range", response_model=ChoreLogsPublic)
+def generate_chore_instances_for_range(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    start_date: datetime,
+    end_date: datetime,
+) -> Any:
+    """
+    Generate chore instances for a date range. Useful for bulk generation.
+    """
+    if start_date > end_date:
+        raise HTTPException(status_code=400, detail="Start date must be before end date")
+    
+    instances = generate_chore_instances_for_date_range(
+        session=session,
+        user_id=current_user.id,
+        start_date=start_date,
+        end_date=end_date
+    )
+    
+    return ChoreLogsPublic(data=instances, count=len(instances))

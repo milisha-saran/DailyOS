@@ -21,6 +21,7 @@ import { DashboardService, ProjectsService, TasksService } from "../../client"
 import { Card } from "../../components/ui/card"
 import { StatsCard, StatsGrid } from "../../components/ui/stats"
 import { ProgressBar, CircularProgress } from "../../components/ui/progress"
+import { DailyTimeTracker } from "../../components/TimeTracking/DailyTimeTracker"
 
 export const Route = createFileRoute("/_layout/dashboard")({
   component: DashboardPage,

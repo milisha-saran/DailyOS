@@ -21,7 +21,9 @@ import { Route as LayoutTasksImport } from './routes/_layout/tasks'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutProjectsImport } from './routes/_layout/projects'
 import { Route as LayoutItemsImport } from './routes/_layout/items'
+import { Route as LayoutGoalsImport } from './routes/_layout/goals'
 import { Route as LayoutDashboardImport } from './routes/_layout/dashboard'
+import { Route as LayoutChoresImport } from './routes/_layout/chores'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
 import { Route as LayoutProjectsProjectIdGoalsImport } from './routes/_layout/projects.$projectId.goals'
 
@@ -77,8 +79,18 @@ const LayoutItemsRoute = LayoutItemsImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutGoalsRoute = LayoutGoalsImport.update({
+  path: '/goals',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
 const LayoutDashboardRoute = LayoutDashboardImport.update({
   path: '/dashboard',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutChoresRoute = LayoutChoresImport.update({
+  path: '/chores',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -121,8 +133,16 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/chores': {
+      preLoaderRoute: typeof LayoutChoresImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/dashboard': {
       preLoaderRoute: typeof LayoutDashboardImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/goals': {
+      preLoaderRoute: typeof LayoutGoalsImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/items': {
@@ -157,7 +177,9 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   LayoutRoute.addChildren([
     LayoutAdminRoute,
+    LayoutChoresRoute,
     LayoutDashboardRoute,
+    LayoutGoalsRoute,
     LayoutItemsRoute,
     LayoutProjectsRoute.addChildren([LayoutProjectsProjectIdGoalsRoute]),
     LayoutSettingsRoute,

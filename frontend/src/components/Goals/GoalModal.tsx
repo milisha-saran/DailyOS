@@ -6,11 +6,11 @@ import {
   Textarea,
   Grid,
 } from "@chakra-ui/react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
-import { FiTarget, FiCalendar, FiClock } from "react-icons/fi"
+import { FiTarget, FiCalendar, FiClock, FiFolder } from "react-icons/fi"
 
-import { GoalsService, type GoalCreate, type GoalPublic, type ProjectPublic } from "../../client"
+import { GoalsService, ProjectsService, type GoalCreate, type GoalPublic, type ProjectPublic } from "../../client"
 import { Button } from "../ui/button"
 import { DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle } from "../ui/dialog"
 import { Field } from "../ui/field"
@@ -29,11 +29,19 @@ interface GoalFormData {
   deadline?: string
   daily_time_allocated_minutes?: number
   weekly_time_allocated_minutes?: number
+  project_id: string
 }
 
 export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalModalProps) {
   const queryClient = useQueryClient()
   const isEditing = !!goal
+
+  // Fetch all projects for the dropdown
+  const { data: projectsData } = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => ProjectsService.readProjects(),
+    enabled: isOpen,
+  })
 
   const {
     register,
@@ -48,10 +56,15 @@ export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalMod
       deadline: goal?.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : "",
       daily_time_allocated_minutes: goal?.daily_time_allocated_minutes || undefined,
       weekly_time_allocated_minutes: goal?.weekly_time_allocated_minutes || undefined,
+      project_id: goal?.project_id || projectId || "",
     },
   })
 
   const dailyTime = watch("daily_time_allocated_minutes")
+  const selectedProjectId = watch("project_id")
+  
+  const projects = projectsData?.data || []
+  const selectedProject = projects.find(p => p.id === selectedProjectId) || project
 
   const createGoalMutation = useMutation({
     mutationFn: (data: GoalCreate) => GoalsService.createGoal({ requestBody: data }),
@@ -63,7 +76,7 @@ export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalMod
 
   const updateGoalMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: GoalFormData }) =>
-      GoalsService.updateGoal({ id, requestBody: { ...data, project_id: projectId } }),
+      GoalsService.updateGoal({ id, requestBody: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["goals", projectId] })
       handleClose()
@@ -84,16 +97,16 @@ export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalMod
     if (isEditing && goal) {
       updateGoalMutation.mutate({ id: goal.id, data: formattedData })
     } else {
-      createGoalMutation.mutate({ ...formattedData, project_id: projectId })
+      createGoalMutation.mutate(formattedData)
     }
   }
 
   const validateTimeAllocation = (value: number | undefined, type: 'daily' | 'weekly') => {
-    if (!value || !project) return true
+    if (!value || !selectedProject) return true
     
     const limit = type === 'daily' 
-      ? project.daily_time_allocated_minutes 
-      : project.weekly_time_allocated_minutes
+      ? selectedProject.daily_time_allocated_minutes 
+      : selectedProject.weekly_time_allocated_minutes
     
     return value <= limit || `Cannot exceed project ${type} allocation (${limit} min)`
   }
@@ -112,9 +125,9 @@ export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalMod
                   {isEditing ? "Edit Goal" : "Create New Goal"}
                 </DialogTitle>
                 <Text fontSize="sm" color="gray.600">
-                  {project && (
+                  {selectedProject && (
                     <>
-                      for <Text as="span" fontWeight="600" color={project.color}>{project.name}</Text>
+                      for <Text as="span" fontWeight="600" color={selectedProject.color}>{selectedProject.name}</Text>
                     </>
                   )}
                 </Text>
@@ -125,6 +138,47 @@ export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalMod
           
           <DialogBody>
             <Flex direction="column" gap={6}>
+              {/* Project Selection */}
+              <Field
+                  label="Project"
+                  required
+                  invalid={!!errors.project_id}
+                  errorText={errors.project_id?.message}
+                  helperText="Which project does this goal belong to?"
+                >
+                  <Box position="relative">
+                    <select
+                      {...register("project_id", { required: "Project is required" })}
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        border: "1px solid #E2E8F0",
+                        borderRadius: "8px",
+                        backgroundColor: "white",
+                        fontSize: "16px",
+                        appearance: "none",
+                      }}
+                    >
+                      <option value="">Select a project...</option>
+                      {projects.map((proj) => (
+                        <option key={proj.id} value={proj.id}>
+                          {proj.name}
+                        </option>
+                      ))}
+                    </select>
+                    <Box
+                      position="absolute"
+                      right={3}
+                      top="50%"
+                      transform="translateY(-50%)"
+                      color="gray.400"
+                      pointerEvents="none"
+                    >
+                      <FiFolder size={18} />
+                    </Box>
+                  </Box>
+                </Field>
+
               {/* Goal Name */}
               <Field
                 label="Goal Name"
@@ -210,7 +264,7 @@ export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalMod
                     label="Daily Time (minutes)"
                     invalid={!!errors.daily_time_allocated_minutes}
                     errorText={errors.daily_time_allocated_minutes?.message}
-                    helperText={project ? `Project limit: ${project.daily_time_allocated_minutes} min` : undefined}
+                    helperText={selectedProject ? `Project limit: ${selectedProject.daily_time_allocated_minutes} min` : undefined}
                   >
                     <Input
                       {...register("daily_time_allocated_minutes", {
@@ -231,7 +285,7 @@ export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalMod
                     label="Weekly Time (minutes)"
                     invalid={!!errors.weekly_time_allocated_minutes}
                     errorText={errors.weekly_time_allocated_minutes?.message}
-                    helperText={project ? `Project limit: ${project.weekly_time_allocated_minutes} min` : undefined}
+                    helperText={selectedProject ? `Project limit: ${selectedProject.weekly_time_allocated_minutes} min` : undefined}
                   >
                     <Input
                       {...register("weekly_time_allocated_minutes", {
@@ -251,7 +305,7 @@ export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalMod
               </Box>
 
               {/* Preview */}
-              {project && (
+              {selectedProject && (
                 <Box
                   bg="white"
                   p={4}
@@ -266,7 +320,7 @@ export function GoalModal({ isOpen, onClose, goal, projectId, project }: GoalMod
                     <Box
                       w={3}
                       h={3}
-                      bg={project.color}
+                      bg={selectedProject.color}
                       borderRadius="full"
                       mr={3}
                     />
